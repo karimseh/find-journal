@@ -1,0 +1,54 @@
+import re
+
+
+TITLE_STOPWORDS = {
+    # Publication types
+    'journal', 'review', 'reviews', 'bulletin', 'proceedings', 'annals',
+    'letters', 'letter', 'reports', 'report', 'archives', 'archive',
+    'transactions', 'gazette', 'magazine', 'communications', 'communication',
+    'memoirs', 'memoir', 'monographs', 'series', 'supplements', 'supplement',
+    'abstracts', 'digest', 'record', 'records', 'notes', 'perspectives',
+    'frontiers', 'advances', 'progress', 'trends', 'updates', 'outlook',
+    'opinions', 'commentaries', 'editorial', 'editorials', 'forum',
+
+    # Scope and geography
+    'international', 'national', 'european', 'american', 'asian', 'african',
+    'british', 'french', 'german', 'canadian', 'australian', 'indian',
+    'chinese', 'japanese', 'korean', 'brazilian', 'mexican', 'italian',
+    'spanish', 'dutch', 'swedish', 'swiss', 'arab', 'iranian', 'turkish',
+    'polish', 'russian', 'nordic', 'scandinavian', 'latin', 'pacific',
+    'mediterranean', 'central', 'eastern', 'western', 'southern', 'northern',
+    'world', 'global', 'regional', 'royal', 'society',
+
+    # Descriptors
+    'applied', 'clinical', 'theoretical', 'experimental', 'advanced',
+    'modern', 'current', 'new', 'general', 'open', 'basic', 'comparative',
+    'comprehensive', 'critical', 'fundamental', 'practical', 'special',
+    'selected', 'contemporary', 'emerging', 'innovative', 'novel',
+    'integrative', 'translational', 'functional', 'systematic',
+    'quantitative', 'qualitative', 'empirical', 'computational',
+    'analytical', 'exploratory', 'preventive', 'predictive',
+
+    # Generic academic
+    'research', 'science', 'sciences', 'scientific', 'studies', 'study',
+    'technology', 'technologies', 'university', 'academic', 'scholarly',
+    'professional', 'multidisciplinary', 'interdisciplinary', 'cross',
+    'disciplinary', 'practice', 'practices', 'methods', 'methodology',
+    'methodologies', 'education', 'educational', 'teaching', 'learning',
+    'training', 'development', 'developments', 'discovery', 'innovation',
+    'engineering', 'design', 'systems', 'system', 'analysis', 'data',
+
+    # Common filler words
+    'the', 'and', 'for', 'with', 'from', 'about', 'into', 'upon',
+    'part', 'section', 'volume', 'issue', 'issues', 'topics',
+    'acta', 'annales', 'revista', 'zeitschrift', 'cahiers',
+}
+
+
+def extract_title_keywords(title: str) -> list[str]:
+    """Extract subject-relevant keywords from a journal title.
+    Filters out stopwords and short words, returning only terms
+    that indicate what field the journal covers.
+    """
+    words = re.findall(r'[a-z]+', title.lower())
+    return [w for w in words if w not in TITLE_STOPWORDS and len(w) >= 3]
