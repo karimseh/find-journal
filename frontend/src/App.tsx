@@ -17,7 +17,9 @@ function Layout({ children }: { children: React.ReactNode }) {
               to="/"
               end
               className={({ isActive }) =>
-                isActive ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground transition-colors"
+                isActive
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground hover:text-foreground transition-colors"
               }
             >
               Match
@@ -25,7 +27,9 @@ function Layout({ children }: { children: React.ReactNode }) {
             <NavLink
               to="/browse"
               className={({ isActive }) =>
-                isActive ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground transition-colors"
+                isActive
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground hover:text-foreground transition-colors"
               }
             >
               Browse
@@ -33,9 +37,19 @@ function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="max-w-5xl mx-auto px-4 py-8 flex-1 w-full">{children}</main>
+      <main className="max-w-5xl mx-auto px-4 py-8 flex-1 w-full">
+        {children}
+      </main>
       <footer className="border-t py-4 text-center text-sm text-muted-foreground mt-auto">
-        Created by <a href="https://karimdev.me" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Karim Sehimi</a>
+        Created by{" "}
+        <a
+          href="https://karimdev.me"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground transition-colors"
+        >
+          Karim Sehimi
+        </a>
       </footer>
     </div>
   );

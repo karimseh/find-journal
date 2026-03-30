@@ -11,11 +11,16 @@ const QUARTILE_OPTIONS = ["Q1", "Q2", "Q3", "Q4"] as const;
 
 function quartileColor(q: string | null) {
   switch (q) {
-    case "Q1": return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200";
-    case "Q2": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-    case "Q3": return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200";
-    case "Q4": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-    default: return "bg-muted text-muted-foreground";
+    case "Q1":
+      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200";
+    case "Q2":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    case "Q3":
+      return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200";
+    case "Q4":
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    default:
+      return "bg-muted text-muted-foreground";
   }
 }
 
@@ -32,7 +37,7 @@ export default function MatchPage() {
 
   function toggleQuartile(q: string) {
     setSelectedQuartiles((prev) =>
-      prev.includes(q) ? prev.filter((x) => x !== q) : [...prev, q]
+      prev.includes(q) ? prev.filter((x) => x !== q) : [...prev, q],
     );
   }
 
@@ -47,7 +52,9 @@ export default function MatchPage() {
 
       let filtered = data;
       if (selectedQuartiles.length) {
-        filtered = filtered.filter((r) => r.quartile && selectedQuartiles.includes(r.quartile));
+        filtered = filtered.filter(
+          (r) => r.quartile && selectedQuartiles.includes(r.quartile),
+        );
       }
       if (minSjr) {
         const threshold = parseFloat(minSjr);
@@ -69,9 +76,12 @@ export default function MatchPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Find a Journal</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Find a Journal
+        </h1>
         <p className="text-muted-foreground mt-1">
-          Paste your abstract and we'll match it to the most relevant DGRSDT Category A journals.
+          Paste your abstract and we'll match it to the most relevant DGRSDT
+          Category A journals.
         </p>
       </div>
 
@@ -95,7 +105,9 @@ export default function MatchPage() {
                 {QUARTILE_OPTIONS.map((q) => (
                   <Badge
                     key={q}
-                    variant={selectedQuartiles.includes(q) ? "default" : "outline"}
+                    variant={
+                      selectedQuartiles.includes(q) ? "default" : "outline"
+                    }
                     className="cursor-pointer select-none"
                     onClick={() => toggleQuartile(q)}
                   >
@@ -132,7 +144,10 @@ export default function MatchPage() {
               />
             </div>
 
-            <Button onClick={handleMatch} disabled={loading || !abstract.trim()}>
+            <Button
+              onClick={handleMatch}
+              disabled={loading || !abstract.trim()}
+            >
               {loading ? "Matching..." : "Match"}
             </Button>
           </div>
@@ -156,30 +171,48 @@ export default function MatchPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm text-muted-foreground font-mono">#{r.rank}</span>
+                      <span className="text-sm text-muted-foreground font-mono">
+                        #{r.rank}
+                      </span>
                       <h3 className="font-medium">{r.title}</h3>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">{r.publisher}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {r.publisher}
+                    </p>
                     {r.categories && (
-                      <p className="text-xs text-muted-foreground mt-1">{r.categories}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {r.categories}
+                      </p>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                     {r.quartile && (
-                      <Badge variant="secondary" className={quartileColor(r.quartile)}>
+                      <Badge
+                        variant="secondary"
+                        className={quartileColor(r.quartile)}
+                      >
                         {r.quartile}
                       </Badge>
                     )}
                     {r.open_access_diamond ? (
-                      <Badge variant="secondary" className="bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200">
+                      <Badge
+                        variant="secondary"
+                        className="bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200"
+                      >
                         Diamond OA
                       </Badge>
                     ) : r.open_access ? (
-                      <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                      <Badge
+                        variant="secondary"
+                        className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                      >
                         Gold OA
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                      <Badge
+                        variant="secondary"
+                        className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                      >
                         Free
                       </Badge>
                     )}

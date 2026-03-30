@@ -29,11 +29,11 @@ class MatchResult:
     similarity_score: float
 
 
-MODEL_NAME = 'all-MiniLM-L6-v2'
+MODEL_NAME = "all-MiniLM-L6-v2"
 TFIDF_WEIGHT = 0.6
 EMBEDDING_WEIGHT = 0.4
 
-CACHE_DIR = Path(__file__).parent.parent / 'data'
+CACHE_DIR = Path(__file__).parent.parent / "data"
 
 _model = None
 
@@ -49,31 +49,31 @@ def _build_tfidf_document(journal: dict) -> str:
     """Build a keyword-rich document for TF-IDF matching."""
     parts = []
 
-    title = journal.get('title', '')
-    title_words = re.findall(r'[a-z]+', title.lower())
+    title = journal.get("title", "")
+    title_words = re.findall(r"[a-z]+", title.lower())
     keywords = [w for w in title_words if w not in TITLE_STOPWORDS and len(w) >= 3]
     if keywords:
-        keyword_text = ' '.join(keywords)
+        keyword_text = " ".join(keywords)
         parts.append(keyword_text)
         parts.append(keyword_text)  # repeat for weight
 
-    categories = journal.get('categories', '') or ''
-    categories_clean = re.sub(r'\(Q[1-4]\)', '', categories).strip()
+    categories = journal.get("categories", "") or ""
+    categories_clean = re.sub(r"\(Q[1-4]\)", "", categories).strip()
     if categories_clean:
         parts.append(categories_clean)
 
-    areas = journal.get('areas', '') or ''
+    areas = journal.get("areas", "") or ""
     if areas:
         parts.append(areas)
 
-    openalex_raw = journal.get('openalex_topics')
+    openalex_raw = journal.get("openalex_topics")
     if openalex_raw:
         try:
             topics = json.loads(openalex_raw)
             for topic in topics:
-                name = topic.get('name', '')
-                subfield = topic.get('subfield', '')
-                field = topic.get('field', '')
+                name = topic.get("name", "")
+                subfield = topic.get("subfield", "")
+                field = topic.get("field", "")
                 parts.append(name)
                 if subfield:
                     parts.append(subfield)
@@ -82,34 +82,34 @@ def _build_tfidf_document(journal: dict) -> str:
         except (json.JSONDecodeError, TypeError):
             pass
 
-    return ' '.join(parts)
+    return " ".join(parts)
 
 
 def _build_embedding_document(journal: dict) -> str:
     """Build a natural-language document for semantic embedding."""
     parts = []
 
-    title = journal.get('title', '')
+    title = journal.get("title", "")
     if title:
         parts.append(title)
 
-    categories = journal.get('categories', '') or ''
-    categories_clean = re.sub(r'\(Q[1-4]\)', '', categories).strip()
+    categories = journal.get("categories", "") or ""
+    categories_clean = re.sub(r"\(Q[1-4]\)", "", categories).strip()
     if categories_clean:
         parts.append(categories_clean)
 
-    areas = journal.get('areas', '') or ''
+    areas = journal.get("areas", "") or ""
     if areas:
         parts.append(areas)
 
-    openalex_raw = journal.get('openalex_topics')
+    openalex_raw = journal.get("openalex_topics")
     if openalex_raw:
         try:
             topics = json.loads(openalex_raw)
             for topic in topics:
-                name = topic.get('name', '')
-                subfield = topic.get('subfield', '')
-                field = topic.get('field', '')
+                name = topic.get("name", "")
+                subfield = topic.get("subfield", "")
+                field = topic.get("field", "")
                 if name:
                     parts.append(name)
                 if subfield:
@@ -119,18 +119,19 @@ def _build_embedding_document(journal: dict) -> str:
         except (json.JSONDecodeError, TypeError):
             pass
 
-    return '. '.join(parts)
+    return ". ".join(parts)
 
 
 def _cache_key(documents: list[str]) -> str:
     """Hash all documents + model name to detect when cache is stale."""
-    content = MODEL_NAME + '\n'.join(documents)
+    content = MODEL_NAME + "\n".join(documents)
     return hashlib.md5(content.encode()).hexdigest()
 
 
 @dataclass
 class HybridIndex:
     """Holds both TF-IDF and embedding indices."""
+
     vectorizer: TfidfVectorizer
     tfidf_matrix: object
     embeddings: np.ndarray
@@ -165,18 +166,20 @@ def build_index(journals: list[dict]) -> HybridIndex:
 
     # Build embedding index (with file cache)
     key = _cache_key(embedding_docs)
-    cache_file = CACHE_DIR / f'embeddings_{key}.npy'
+    cache_file = CACHE_DIR / f"embeddings_{key}.npy"
 
     if cache_file.exists():
         print(f"  Loading cached embeddings from {cache_file.name}")
         embeddings = np.load(cache_file)
     else:
-        for old in CACHE_DIR.glob('embeddings_*.npy'):
+        for old in CACHE_DIR.glob("embeddings_*.npy"):
             old.unlink()
 
         model = _get_model()
         print(f"  Encoding {len(embedding_docs)} journal documents (first time, will cache)...")
-        embeddings = model.encode(embedding_docs, show_progress_bar=True, batch_size=64, normalize_embeddings=True)
+        embeddings = model.encode(
+            embedding_docs, show_progress_bar=True, batch_size=64, normalize_embeddings=True
+        )
         np.save(cache_file, embeddings)
         print(f"  Cached embeddings to {cache_file.name}")
 
@@ -225,20 +228,22 @@ def match_abstract(
             break
 
         j = index.journals[idx]
-        results.append(MatchResult(
-            rank=len(results) + 1,
-            title=j.get('title', ''),
-            issn=j.get('issn', '') or '',
-            eissn=j.get('eissn', '') or '',
-            publisher=j.get('publisher', '') or '',
-            quartile=j.get('quartile', '') or 'N/A',
-            sjr=j.get('sjr') or 0.0,
-            h_index=j.get('h_index') or 0,
-            categories=j.get('categories', '') or 'N/A',
-            areas=j.get('areas', '') or 'N/A',
-            open_access=bool(j.get('open_access', False)),
-            open_access_diamond=bool(j.get('open_access_diamond', False)),
-            similarity_score=round(float(score), 4),
-        ))
+        results.append(
+            MatchResult(
+                rank=len(results) + 1,
+                title=j.get("title", ""),
+                issn=j.get("issn", "") or "",
+                eissn=j.get("eissn", "") or "",
+                publisher=j.get("publisher", "") or "",
+                quartile=j.get("quartile", "") or "N/A",
+                sjr=j.get("sjr") or 0.0,
+                h_index=j.get("h_index") or 0,
+                categories=j.get("categories", "") or "N/A",
+                areas=j.get("areas", "") or "N/A",
+                open_access=bool(j.get("open_access", False)),
+                open_access_diamond=bool(j.get("open_access_diamond", False)),
+                similarity_score=round(float(score), 4),
+            )
+        )
 
     return results

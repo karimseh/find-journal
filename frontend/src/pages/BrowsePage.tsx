@@ -16,11 +16,16 @@ const PER_PAGE = 30;
 
 function quartileColor(q: string | null) {
   switch (q) {
-    case "Q1": return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200";
-    case "Q2": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-    case "Q3": return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200";
-    case "Q4": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-    default: return "bg-muted text-muted-foreground";
+    case "Q1":
+      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200";
+    case "Q2":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    case "Q3":
+      return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200";
+    case "Q4":
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    default:
+      return "bg-muted text-muted-foreground";
   }
 }
 
@@ -46,7 +51,9 @@ export default function BrowsePage() {
         setTotal(data.length);
       } else {
         const data: JournalsResponse = await getJournals({
-          quartile: selectedQuartiles.length ? selectedQuartiles.join(",") : undefined,
+          quartile: selectedQuartiles.length
+            ? selectedQuartiles.join(",")
+            : undefined,
           min_sjr: minSjr ? parseFloat(minSjr) : undefined,
           page,
           per_page: PER_PAGE,
@@ -72,7 +79,7 @@ export default function BrowsePage() {
 
   function toggleQuartile(q: string) {
     setSelectedQuartiles((prev) =>
-      prev.includes(q) ? prev.filter((x) => x !== q) : [...prev, q]
+      prev.includes(q) ? prev.filter((x) => x !== q) : [...prev, q],
     );
   }
 
@@ -81,9 +88,12 @@ export default function BrowsePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Browse Journals</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Browse Journals
+        </h1>
         <p className="text-muted-foreground mt-1">
-          Explore the {total.toLocaleString()} DGRSDT Category A journals in the database.
+          Explore the {total.toLocaleString()} DGRSDT Category A journals in the
+          database.
         </p>
       </div>
 
@@ -106,7 +116,9 @@ export default function BrowsePage() {
                 {QUARTILE_OPTIONS.map((q) => (
                   <Badge
                     key={q}
-                    variant={selectedQuartiles.includes(q) ? "default" : "outline"}
+                    variant={
+                      selectedQuartiles.includes(q) ? "default" : "outline"
+                    }
                     className="cursor-pointer select-none"
                     onClick={() => toggleQuartile(q)}
                   >
@@ -144,33 +156,51 @@ export default function BrowsePage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <h3 className="font-medium">{j.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{j.publisher}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {j.publisher}
+                  </p>
                   {j.areas && (
-                    <p className="text-xs text-muted-foreground mt-1">{j.areas}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {j.areas}
+                    </p>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                   {j.quartile && (
-                    <Badge variant="secondary" className={quartileColor(j.quartile)}>
+                    <Badge
+                      variant="secondary"
+                      className={quartileColor(j.quartile)}
+                    >
                       {j.quartile}
                     </Badge>
                   )}
                   {j.open_access_diamond ? (
-                    <Badge variant="secondary" className="bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200">
+                    <Badge
+                      variant="secondary"
+                      className="bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200"
+                    >
                       Diamond OA
                     </Badge>
                   ) : j.open_access ? (
-                    <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                    <Badge
+                      variant="secondary"
+                      className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                    >
                       Gold OA
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    <Badge
+                      variant="secondary"
+                      className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                    >
                       Free
                     </Badge>
                   )}
                   <div className="text-right">
                     {j.sjr != null && (
-                      <div className="text-sm tabular-nums">SJR {j.sjr.toFixed(3)}</div>
+                      <div className="text-sm tabular-nums">
+                        SJR {j.sjr.toFixed(3)}
+                      </div>
                     )}
                     {j.h_index != null && (
                       <div className="text-xs text-muted-foreground tabular-nums">
@@ -185,7 +215,9 @@ export default function BrowsePage() {
         ))}
 
         {!loading && journals.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">No journals found.</p>
+          <p className="text-center text-muted-foreground py-8">
+            No journals found.
+          </p>
         )}
 
         {!isSearchMode && totalPages > 1 && (

@@ -1,6 +1,6 @@
 # FindJournal
 
-FindJournal helps Algerian researchers identify suitable journals for their work from the DGRSDT Category A list (~13,600 journals). 
+FindJournal helps Algerian researchers identify suitable journals for their work from the DGRSDT Category A list (~13,600 journals).
 
 ## Features
 

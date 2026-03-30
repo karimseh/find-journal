@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-import pdfplumber
 import pandas as pd
+import pdfplumber
 
 from . import utils
 
@@ -59,17 +59,17 @@ def _merge_rows(all_rows: list[list]) -> list[RawJournal]:
     pending_title = None
 
     for row in all_rows:
-        cell0 = (row[0] or '').strip()        # number
-        cell1 = utils.clean_text(row[1]) if row[1] else ''  # title
-        cell2 = row[2] or ''                   # issn
-        cell3 = row[3] or ''                   # eissn
-        cell4 = utils.clean_text(row[4]) if row[4] else ''  # publisher
+        cell0 = (row[0] or "").strip()  # number
+        cell1 = utils.clean_text(row[1]) if row[1] else ""  # title
+        cell2 = row[2] or ""  # issn
+        cell3 = row[3] or ""  # eissn
+        cell4 = utils.clean_text(row[4]) if row[4] else ""  # publisher
 
         # Skip header rows (contain "N°" or similar)
-        if 'N' in cell0 and '°' in cell0:
+        if "N" in cell0 and "°" in cell0:
             continue
 
-        has_number = cell0.replace('.', '').isdigit()
+        has_number = cell0.replace(".", "").isdigit()
 
         if not has_number and cell1:
             # Title-only row — save it, expect a number-only row next
@@ -78,7 +78,7 @@ def _merge_rows(all_rows: list[list]) -> list[RawJournal]:
 
         if has_number:
             try:
-                number = int(cell0.replace('.', ''))
+                number = int(cell0.replace(".", ""))
             except ValueError:
                 continue
 
@@ -92,13 +92,15 @@ def _merge_rows(all_rows: list[list]) -> list[RawJournal]:
             else:
                 continue  # No title available — skip
 
-            journals.append(RawJournal(
-                number=number,
-                title=title,
-                issn=utils.normalize_issn(cell2) if cell2.strip() else None,
-                eissn=utils.normalize_issn(cell3) if cell3.strip() else None,
-                publisher=cell4,
-            ))
+            journals.append(
+                RawJournal(
+                    number=number,
+                    title=title,
+                    issn=utils.normalize_issn(cell2) if cell2.strip() else None,
+                    eissn=utils.normalize_issn(cell3) if cell3.strip() else None,
+                    publisher=cell4,
+                )
+            )
 
     return journals
 
@@ -112,12 +114,22 @@ def parse_csv_fallback(csv_path: str) -> list[RawJournal]:
     journals = []
 
     for _, row in df.iterrows():
-        journals.append(RawJournal(
-            number=int(row.get('number', 0)),
-            title=str(row.get('title', '')),
-            issn=utils.normalize_issn(str(row.get('issn', ''))) if pd.notna(row.get('issn')) else None,
-            eissn=utils.normalize_issn(str(row.get('eissn', ''))) if pd.notna(row.get('eissn')) else None,
-            publisher=str(row.get('publisher', '')),
-        ))
+        journals.append(
+            RawJournal(
+                number=int(row.get("number", 0)),
+                title=str(row.get("title", "")),
+                issn=(
+                    utils.normalize_issn(str(row.get("issn", "")))
+                    if pd.notna(row.get("issn"))
+                    else None
+                ),
+                eissn=(
+                    utils.normalize_issn(str(row.get("eissn", "")))
+                    if pd.notna(row.get("eissn"))
+                    else None
+                ),
+                publisher=str(row.get("publisher", "")),
+            )
+        )
 
     return journals

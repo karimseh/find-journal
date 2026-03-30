@@ -6,26 +6,34 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from journal_matcher.parser import parse_dgrsdt_pdf, parse_csv_fallback
-from journal_matcher.enricher import load_scimago, batch_fetch_openalex, enrich_journals
-from journal_matcher.storage import init_db, insert_journals, get_stats
+from journal_matcher.enricher import batch_fetch_openalex, enrich_journals, load_scimago
 from journal_matcher.keywords import extract_title_keywords
+from journal_matcher.parser import parse_csv_fallback, parse_dgrsdt_pdf
+from journal_matcher.storage import get_stats, init_db, insert_journals
 
-
-DATA_DIR = Path(__file__).parent / 'data'
-DEFAULT_CSV = DATA_DIR / 'journals_parsed.csv'
-DEFAULT_SCIMAGO = DATA_DIR / 'scimago.csv'
-DEFAULT_DB = DATA_DIR / 'journals.db'
+DATA_DIR = Path(__file__).parent / "data"
+DEFAULT_CSV = DATA_DIR / "journals_parsed.csv"
+DEFAULT_SCIMAGO = DATA_DIR / "scimago.csv"
+DEFAULT_DB = DATA_DIR / "journals.db"
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Build journal matcher database')
-    parser.add_argument('--pdf', type=str, help='Path to DGRSDT PDF (uses CSV fallback if omitted)')
-    parser.add_argument('--csv', type=str, default=str(DEFAULT_CSV), help='Path to parsed journals CSV')
-    parser.add_argument('--scimago', type=str, default=str(DEFAULT_SCIMAGO), help='Path to Scimago CSV')
-    parser.add_argument('--db', type=str, default=str(DEFAULT_DB), help='Output database path')
-    parser.add_argument('--skip-openalex', action='store_true', help='Skip OpenAlex API enrichment')
-    parser.add_argument('--api-key', type=str, default='', help='OpenAlex API key (free at https://openalex.org/settings/api)')
+    parser = argparse.ArgumentParser(description="Build journal matcher database")
+    parser.add_argument("--pdf", type=str, help="Path to DGRSDT PDF (uses CSV fallback if omitted)")
+    parser.add_argument(
+        "--csv", type=str, default=str(DEFAULT_CSV), help="Path to parsed journals CSV"
+    )
+    parser.add_argument(
+        "--scimago", type=str, default=str(DEFAULT_SCIMAGO), help="Path to Scimago CSV"
+    )
+    parser.add_argument("--db", type=str, default=str(DEFAULT_DB), help="Output database path")
+    parser.add_argument("--skip-openalex", action="store_true", help="Skip OpenAlex API enrichment")
+    parser.add_argument(
+        "--api-key",
+        type=str,
+        default="",
+        help="OpenAlex API key (free at https://openalex.org/settings/api)",
+    )
     args = parser.parse_args()
 
     start = time.time()
@@ -62,10 +70,10 @@ def main():
 
     # Add title keywords to each record
     for record in enriched:
-        record['title_keywords'] = ' '.join(extract_title_keywords(record['title']))
+        record["title_keywords"] = " ".join(extract_title_keywords(record["title"]))
 
-    scimago_count = sum(1 for r in enriched if r.get('quartile'))
-    openalex_count = sum(1 for r in enriched if r.get('openalex_topics'))
+    scimago_count = sum(1 for r in enriched if r.get("quartile"))
+    openalex_count = sum(1 for r in enriched if r.get("openalex_topics"))
     print(f"  {len(enriched)} journals enriched")
     print(f"  Scimago matches: {scimago_count}")
     print(f"  OpenAlex matches: {openalex_count}")
@@ -89,5 +97,5 @@ def main():
     print(f"  Database saved to: {args.db}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

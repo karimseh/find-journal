@@ -1,8 +1,8 @@
-import json
 import http.client
+import json
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from threading import Lock
@@ -10,7 +10,6 @@ from threading import Lock
 import pandas as pd
 
 from . import utils
-
 
 
 @dataclass
@@ -33,25 +32,24 @@ class OpenAlexData:
     topics: list[dict] = field(default_factory=list)
 
 
-
 def load_scimago(csv_path: str) -> dict[str, ScimagoData]:
-    df = pd.read_csv(csv_path, sep=';')
+    df = pd.read_csv(csv_path, sep=";")
     scimago_dict = {}
 
     for _, row in df.iterrows():
         data = ScimagoData(
-            sjr=utils.safe_float(row.get('SJR')),
-            quartile=utils.clean_text(row.get('SJR Best Quartile')),
-            h_index=utils.safe_int(row.get('H index')),
-            categories=utils.clean_text(row.get('Categories')),
-            areas=utils.clean_text(row.get('Areas')),
-            citations_per_doc=utils.safe_float(row.get('Citations / Doc. (2years)')),
-            scimago_title=utils.clean_text(row.get('Title')),
-            open_access=str(row.get('Open Access', '')).strip().lower() == 'yes',
-            open_access_diamond=str(row.get('Open Access Diamond', '')).strip().lower() == 'yes',
+            sjr=utils.safe_float(row.get("SJR")),
+            quartile=utils.clean_text(row.get("SJR Best Quartile")),
+            h_index=utils.safe_int(row.get("H index")),
+            categories=utils.clean_text(row.get("Categories")),
+            areas=utils.clean_text(row.get("Areas")),
+            citations_per_doc=utils.safe_float(row.get("Citations / Doc. (2years)")),
+            scimago_title=utils.clean_text(row.get("Title")),
+            open_access=str(row.get("Open Access", "")).strip().lower() == "yes",
+            open_access_diamond=str(row.get("Open Access Diamond", "")).strip().lower() == "yes",
         )
 
-        raw_issns = str(row.get('Issn', '')).split(',')
+        raw_issns = str(row.get("Issn", "")).split(",")
         for raw_issn in raw_issns:
             normalized = utils.normalize_issn(raw_issn.strip())
             if normalized:
@@ -60,11 +58,10 @@ def load_scimago(csv_path: str) -> dict[str, ScimagoData]:
     return scimago_dict
 
 
-
 OPENALEX_BASE = "https://api.openalex.org/sources/issn:"
 
 
-def fetch_openalex(issn: str, api_key: str = '', retries: int = 2) -> OpenAlexData | None:
+def fetch_openalex(issn: str, api_key: str = "", retries: int = 2) -> OpenAlexData | None:
     hyphenated = utils.issn_with_hyphen(issn)
     if not hyphenated:
         return None
@@ -85,33 +82,41 @@ def fetch_openalex(issn: str, api_key: str = '', retries: int = 2) -> OpenAlexDa
             if e.code == 404:
                 return None
             return None
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError,
-                http.client.IncompleteRead, ConnectionError, OSError):
+        except (
+            urllib.error.URLError,
+            TimeoutError,
+            json.JSONDecodeError,
+            http.client.IncompleteRead,
+            ConnectionError,
+            OSError,
+        ):
             if attempt < retries:
                 time.sleep(1)
                 continue
             return None
 
     topics = []
-    for t in raw.get('topics', []):
-        topics.append({
-            'name': t.get('display_name', ''),
-            'count': t.get('count', 0),
-            'subfield': t.get('subfield', {}).get('display_name', ''),
-            'field': t.get('field', {}).get('display_name', ''),
-            'domain': t.get('domain', {}).get('display_name', ''),
-        })
+    for t in raw.get("topics", []):
+        topics.append(
+            {
+                "name": t.get("display_name", ""),
+                "count": t.get("count", 0),
+                "subfield": t.get("subfield", {}).get("display_name", ""),
+                "field": t.get("field", {}).get("display_name", ""),
+                "domain": t.get("domain", {}).get("display_name", ""),
+            }
+        )
 
     return OpenAlexData(
-        openalex_id=raw.get('id'),
-        display_name=raw.get('display_name'),
+        openalex_id=raw.get("id"),
+        display_name=raw.get("display_name"),
         topics=topics,
     )
 
 
 def batch_fetch_openalex(
     issns: list[str],
-    api_key: str = '',
+    api_key: str = "",
     workers: int = 20,
 ) -> dict[str, OpenAlexData]:
     """Fetch OpenAlex data for many ISSNs in parallel.
@@ -122,7 +127,7 @@ def batch_fetch_openalex(
     """
     results = {}
     total = len(issns)
-    counter = {'done': 0}
+    counter = {"done": 0}
     lock = Lock()
 
     def _fetch_one(issn):
@@ -134,15 +139,14 @@ def batch_fetch_openalex(
         for future in as_completed(futures):
             issn, data = future.result()
             with lock:
-                counter['done'] += 1
+                counter["done"] += 1
                 if data:
                     results[issn] = data
-                if counter['done'] % 500 == 0:
+                if counter["done"] % 500 == 0:
                     print(f"  OpenAlex: {counter['done']}/{total} fetched, {len(results)} matched")
 
     print(f"  OpenAlex: {total}/{total} done, {len(results)} matched")
     return results
-
 
 
 def enrich_journals(
@@ -150,7 +154,7 @@ def enrich_journals(
     scimago: dict[str, ScimagoData],
     openalex: dict[str, OpenAlexData] | None = None,
 ) -> list[dict]:
-    
+
     if openalex is None:
         openalex = {}
 
@@ -172,23 +176,23 @@ def enrich_journals(
             oal = openalex.get(journal.eissn)
 
         record = {
-            'number': journal.number,
-            'title': journal.title,
-            'issn': journal.issn,
-            'eissn': journal.eissn,
-            'publisher': journal.publisher,
+            "number": journal.number,
+            "title": journal.title,
+            "issn": journal.issn,
+            "eissn": journal.eissn,
+            "publisher": journal.publisher,
             # Scimago fields (None if no match)
-            'sjr': sci.sjr if sci else None,
-            'quartile': sci.quartile if sci else None,
-            'h_index': sci.h_index if sci else None,
-            'categories': sci.categories if sci else None,
-            'areas': sci.areas if sci else None,
-            'citations_per_doc': sci.citations_per_doc if sci else None,
-            'open_access': sci.open_access if sci else False,
-            'open_access_diamond': sci.open_access_diamond if sci else False,
+            "sjr": sci.sjr if sci else None,
+            "quartile": sci.quartile if sci else None,
+            "h_index": sci.h_index if sci else None,
+            "categories": sci.categories if sci else None,
+            "areas": sci.areas if sci else None,
+            "citations_per_doc": sci.citations_per_doc if sci else None,
+            "open_access": sci.open_access if sci else False,
+            "open_access_diamond": sci.open_access_diamond if sci else False,
             # OpenAlex fields (None/empty if no match)
-            'openalex_id': oal.openalex_id if oal else None,
-            'openalex_topics': json.dumps(oal.topics) if oal else None,
+            "openalex_id": oal.openalex_id if oal else None,
+            "openalex_topics": json.dumps(oal.topics) if oal else None,
         }
 
         enriched.append(record)

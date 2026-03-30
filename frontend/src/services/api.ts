@@ -46,7 +46,7 @@ export interface Stats {
 
 export async function matchAbstract(
   abstract: string,
-  options: { top_n?: number; quartiles?: string[]; min_sjr?: number } = {}
+  options: { top_n?: number; quartiles?: string[]; min_sjr?: number } = {},
 ): Promise<MatchResult[]> {
   const res = await fetch(`${API_BASE}/match`, {
     method: "POST",
@@ -59,7 +59,7 @@ export async function matchAbstract(
 
 export async function searchJournals(
   q: string,
-  limit = 20
+  limit = 20,
 ): Promise<JournalEntry[]> {
   const params = new URLSearchParams({ q, limit: String(limit) });
   const res = await fetch(`${API_BASE}/search?${params}`);
@@ -67,12 +67,14 @@ export async function searchJournals(
   return res.json();
 }
 
-export async function getJournals(options: {
-  quartile?: string;
-  min_sjr?: number;
-  page?: number;
-  per_page?: number;
-} = {}): Promise<JournalsResponse> {
+export async function getJournals(
+  options: {
+    quartile?: string;
+    min_sjr?: number;
+    page?: number;
+    per_page?: number;
+  } = {},
+): Promise<JournalsResponse> {
   const params = new URLSearchParams();
   if (options.quartile) params.set("quartile", options.quartile);
   if (options.min_sjr != null) params.set("min_sjr", String(options.min_sjr));
