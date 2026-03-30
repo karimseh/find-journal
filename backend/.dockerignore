@@ -1,0 +1,5 @@
+__pycache__
+*.pyc
+.venv
+data/journals_parsed.csv
+data/scimago.csv
