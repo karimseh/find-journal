@@ -20,6 +20,8 @@ class MatchResult:
     h_index: int
     categories: str
     areas: str
+    open_access: bool
+    open_access_diamond: bool
     similarity_score: float
 
 
@@ -127,6 +129,8 @@ def match_abstract(
             h_index=j.get('h_index') or 0,
             categories=j.get('categories', '') or 'N/A',
             areas=j.get('areas', '') or 'N/A',
+            open_access=bool(j.get('open_access', False)),
+            open_access_diamond=bool(j.get('open_access_diamond', False)),
             similarity_score=round(float(score), 4),
         ))
 

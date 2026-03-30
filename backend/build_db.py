@@ -25,7 +25,7 @@ def main():
     parser.add_argument('--scimago', type=str, default=str(DEFAULT_SCIMAGO), help='Path to Scimago CSV')
     parser.add_argument('--db', type=str, default=str(DEFAULT_DB), help='Output database path')
     parser.add_argument('--skip-openalex', action='store_true', help='Skip OpenAlex API enrichment')
-    parser.add_argument('--mailto', type=str, default='', help='Email for OpenAlex polite pool (100 req/sec vs 10)')
+    parser.add_argument('--api-key', type=str, default='', help='OpenAlex API key (free at https://openalex.org/settings/api)')
     args = parser.parse_args()
 
     start = time.time()
@@ -53,7 +53,7 @@ def main():
             if j.eissn:
                 issns.add(j.eissn)
         print(f"  {len(issns)} unique ISSNs to look up (20 parallel workers)")
-        openalex = batch_fetch_openalex(list(issns), mailto=args.mailto)
+        openalex = batch_fetch_openalex(list(issns), api_key=args.api_key)
     else:
         print("\nStep 3: Skipping OpenAlex (--skip-openalex)")
 

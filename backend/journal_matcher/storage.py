@@ -22,6 +22,8 @@ def init_db(db_path: str) -> sqlite3.Connection:
             categories TEXT,
             areas TEXT,
             citations_per_doc REAL,
+            open_access BOOLEAN DEFAULT 0,
+            open_access_diamond BOOLEAN DEFAULT 0,
             openalex_id TEXT,
             openalex_topics TEXT,
             title_keywords TEXT
@@ -44,11 +46,13 @@ def insert_journals(conn: sqlite3.Connection, journals: list[dict]):
         INSERT INTO journals
             (number, title, issn, eissn, publisher,
              sjr, quartile, h_index, categories, areas,
-             citations_per_doc, openalex_id, openalex_topics, title_keywords)
+             citations_per_doc, open_access, open_access_diamond,
+             openalex_id, openalex_topics, title_keywords)
         VALUES
             (:number, :title, :issn, :eissn, :publisher,
              :sjr, :quartile, :h_index, :categories, :areas,
-             :citations_per_doc, :openalex_id, :openalex_topics, :title_keywords)
+             :citations_per_doc, :open_access, :open_access_diamond,
+             :openalex_id, :openalex_topics, :title_keywords)
     ''', journals)
     conn.commit()
 

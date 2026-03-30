@@ -22,6 +22,8 @@ class ScimagoData:
     areas: str | None
     citations_per_doc: float | None
     scimago_title: str | None
+    open_access: bool
+    open_access_diamond: bool
 
 
 @dataclass
@@ -45,6 +47,8 @@ def load_scimago(csv_path: str) -> dict[str, ScimagoData]:
             areas=utils.clean_text(row.get('Areas')),
             citations_per_doc=utils.safe_float(row.get('Citations / Doc. (2years)')),
             scimago_title=utils.clean_text(row.get('Title')),
+            open_access=str(row.get('Open Access', '')).strip().lower() == 'yes',
+            open_access_diamond=str(row.get('Open Access Diamond', '')).strip().lower() == 'yes',
         )
 
         raw_issns = str(row.get('Issn', '')).split(',')
@@ -60,20 +64,19 @@ def load_scimago(csv_path: str) -> dict[str, ScimagoData]:
 OPENALEX_BASE = "https://api.openalex.org/sources/issn:"
 
 
-def fetch_openalex(issn: str, mailto: str = '', retries: int = 2) -> OpenAlexData | None:
+def fetch_openalex(issn: str, api_key: str = '', retries: int = 2) -> OpenAlexData | None:
     hyphenated = utils.issn_with_hyphen(issn)
     if not hyphenated:
         return None
 
     url = f"{OPENALEX_BASE}{hyphenated}"
-    if mailto:
-        url += f"?mailto={mailto}"
+    if api_key:
+        url += f"?api_key={api_key}"
 
     for attempt in range(retries + 1):
         try:
             req = urllib.request.Request(url)
-            req.add_header("User-Agent", f"JournalMatcher/1.0 (mailto:{mailto})" if mailto
-                           else "JournalMatcher/1.0 (academic research tool)")
+            req.add_header("User-Agent", "JournalMatcher/1.0 (academic research tool)")
 
             with urllib.request.urlopen(req, timeout=10) as resp:
                 raw = json.loads(resp.read().decode())
@@ -108,14 +111,14 @@ def fetch_openalex(issn: str, mailto: str = '', retries: int = 2) -> OpenAlexDat
 
 def batch_fetch_openalex(
     issns: list[str],
-    mailto: str = '',
+    api_key: str = '',
     workers: int = 20,
 ) -> dict[str, OpenAlexData]:
     """Fetch OpenAlex data for many ISSNs in parallel.
 
     Uses ThreadPoolExecutor for concurrent HTTP requests.
-    With mailto set, OpenAlex allows ~100 req/sec (vs 10 without).
-    20 workers keeps us well within limits while being fast.
+    With api_key set, OpenAlex gives higher rate limits.
+    Get a free key at https://openalex.org/settings/api
     """
     results = {}
     total = len(issns)
@@ -123,7 +126,7 @@ def batch_fetch_openalex(
     lock = Lock()
 
     def _fetch_one(issn):
-        return issn, fetch_openalex(issn, mailto=mailto)
+        return issn, fetch_openalex(issn, api_key=api_key)
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(_fetch_one, issn): issn for issn in issns}
@@ -181,6 +184,8 @@ def enrich_journals(
             'categories': sci.categories if sci else None,
             'areas': sci.areas if sci else None,
             'citations_per_doc': sci.citations_per_doc if sci else None,
+            'open_access': sci.open_access if sci else False,
+            'open_access_diamond': sci.open_access_diamond if sci else False,
             # OpenAlex fields (None/empty if no match)
             'openalex_id': oal.openalex_id if oal else None,
             'openalex_topics': json.dumps(oal.topics) if oal else None,
