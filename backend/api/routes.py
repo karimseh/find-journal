@@ -25,8 +25,8 @@ def match():
     quartiles = data.get('quartiles')
     min_sjr = data.get('min_sjr')
 
-    vectorizer, tfidf_matrix, journals = get_index()
-    results = match_abstract(abstract, vectorizer, tfidf_matrix, journals, top_n=top_n)
+    index = get_index()
+    results = match_abstract(abstract, index, top_n=top_n)
 
     # Apply post-match filters if provided
     if quartiles:

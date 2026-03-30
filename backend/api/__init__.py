@@ -3,43 +3,33 @@ from flask_cors import CORS
 
 from config import Config
 from journal_matcher.storage import init_db, query_all_journals
-from journal_matcher.matcher import build_index
+from journal_matcher.matcher import build_index, HybridIndex
 
 
-# Module-level cache for the TF-IDF index (built once, reused per request)
-_index_cache = {
-    'vectorizer': None,
-    'tfidf_matrix': None,
-    'journals': None,
-}
+_index_cache: HybridIndex | None = None
 
 
-def get_index():
-    """Return the cached TF-IDF index components."""
-    return _index_cache['vectorizer'], _index_cache['tfidf_matrix'], _index_cache['journals']
+def get_index() -> HybridIndex:
+    """Return the cached hybrid index."""
+    return _index_cache
 
 
 def create_app():
+    global _index_cache
+
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Allow React dev server (localhost:5173) to call the API
     CORS(app)
 
-    # Open DB connection (shared across requests)
     conn = init_db(app.config['DATABASE_PATH'])
     app.config['DB_CONN'] = conn
 
-    # Build TF-IDF index at startup (~2-5 seconds)
-    print("Building TF-IDF index...")
+    print("Building hybrid index (TF-IDF + embeddings)...")
     journals = query_all_journals(conn)
-    vectorizer, tfidf_matrix, valid_journals = build_index(journals)
-    _index_cache['vectorizer'] = vectorizer
-    _index_cache['tfidf_matrix'] = tfidf_matrix
-    _index_cache['journals'] = valid_journals
-    print(f"Index ready: {len(valid_journals)} journals indexed")
+    _index_cache = build_index(journals)
+    print(f"Index ready: {len(_index_cache.journals)} journals indexed")
 
-    # Register routes
     from api.routes import bp
     app.register_blueprint(bp)
 

@@ -16,8 +16,9 @@ dist/
 dist-ssr/
 *.local
 
-# Database (rebuild with build_db.py)
+# Database & embeddings cache (rebuild with build_db.py)
 backend/data/journals.db
+backend/data/embeddings_*.npy
 
 # Environment & secrets
 .env
