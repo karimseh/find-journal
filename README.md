@@ -13,32 +13,34 @@ FindJournal helps Algerian researchers identify suitable journals for their work
 
 ## Quick start
 
-### Backend
+### Docker (recommended)
 
 ```bash
+# Build the database first (one time)
 cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Build the database (first time only)
 python build_db.py --api-key YOUR_OPENALEX_KEY
 
-# Start the API server
-python -m flask --app api run
+# Run the full stack
+docker compose up --build
 ```
 
-The server runs on `http://localhost:5000`.
+The app runs on `http://localhost:3000`.
 
-### Frontend
+### Local development
 
 ```bash
+# Backend
+cd backend
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python build_db.py --api-key YOUR_OPENALEX_KEY   # first time only
+python -m flask --app api run                     # http://localhost:5000
+
+# Frontend (separate terminal)
 cd frontend
 npm install
-npm run dev
+npm run dev                                       # http://localhost:5173
 ```
-
-The dev server runs on `http://localhost:5173`.
 
 ## Building the database
 
