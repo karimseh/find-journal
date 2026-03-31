@@ -11,6 +11,7 @@ bp = Blueprint("api", __name__, url_prefix="/api")
 MAX_ABSTRACT_LENGTH = 10_000  # ~2000 words
 MAX_TOP_N = 200
 MAX_PER_PAGE = 100
+VALID_QUARTILES = {"Q1", "Q2", "Q3", "Q4"}
 
 
 @bp.route("/match", methods=["POST"])
@@ -29,9 +30,20 @@ def match():
     if len(abstract) > MAX_ABSTRACT_LENGTH:
         return jsonify({"error": f"abstract too long (max {MAX_ABSTRACT_LENGTH} characters)"}), 400
 
-    top_n = min(data.get("top_n", 15), MAX_TOP_N)
+    top_n = data.get("top_n", 15)
+    if not isinstance(top_n, int) or top_n < 1:
+        return jsonify({"error": "top_n must be a positive integer"}), 400
+    top_n = min(top_n, MAX_TOP_N)
+
     quartiles = data.get("quartiles")
+    if quartiles is not None:
+        if not isinstance(quartiles, list) or not all(q in VALID_QUARTILES for q in quartiles):
+            return jsonify({"error": f"quartiles must be a list of {sorted(VALID_QUARTILES)}"}), 400
+
     min_sjr = data.get("min_sjr")
+    if min_sjr is not None:
+        if not isinstance(min_sjr, (int, float)) or min_sjr < 0:
+            return jsonify({"error": "min_sjr must be a non-negative number"}), 400
 
     index = get_index()
     results = match_abstract(abstract, index, top_n=top_n)
@@ -85,10 +97,19 @@ def journals():
     conn = current_app.config["DB_CONN"]
 
     quartile = request.args.get("quartile")
-    quartiles = quartile.split(",") if quartile else None
+    if quartile:
+        quartiles = quartile.split(",")
+        if not all(q in VALID_QUARTILES for q in quartiles):
+            return jsonify({"error": f"quartile must be from {sorted(VALID_QUARTILES)}"}), 400
+    else:
+        quartiles = None
+
     min_sjr = request.args.get("min_sjr", type=float)
+    if min_sjr is not None and min_sjr < 0:
+        return jsonify({"error": "min_sjr must be a non-negative number"}), 400
+
     page = max(request.args.get("page", 1, type=int), 1)
-    per_page = min(request.args.get("per_page", 50, type=int), MAX_PER_PAGE)
+    per_page = min(max(request.args.get("per_page", 50, type=int), 1), MAX_PER_PAGE)
 
     all_journals = query_filtered_journals(conn, quartiles=quartiles, min_sjr=min_sjr)
 
