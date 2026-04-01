@@ -151,6 +151,10 @@ export default function MatchPage() {
               {loading ? "Matching..." : "Match"}
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground text-center mt-4">
+            Note: Due to journal updates, the publication mode (Open Access
+            status) may not always be accurate.
+          </p>
         </CardContent>
       </Card>
 
