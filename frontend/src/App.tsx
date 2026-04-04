@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { Separator } from "@/components/ui/separator";
 import MatchPage from "@/pages/MatchPage";
 import BrowsePage from "@/pages/BrowsePage";
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="/browse" element={<BrowsePage />} />
         </Routes>
       </Layout>
+      <Analytics />
     </BrowserRouter>
   );
 }
